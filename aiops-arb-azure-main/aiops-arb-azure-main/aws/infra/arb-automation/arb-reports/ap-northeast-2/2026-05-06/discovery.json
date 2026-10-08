@@ -1,0 +1,97 @@
+{
+  "region": "ap-northeast-2",
+  "account": "260544022684",
+  "service_name": "aiops",
+  "environment": "dev",
+  "discovery_date": "2026-05-06",
+  "vpc": {
+    "count": 1,
+    "items": [
+      {
+        "vpc_id": "vpc-0eeeef2e55b43928f",
+        "name": "aiops-vpc-apne2-dev",
+        "cidr": "10.10.0.0/16",
+        "terraform_managed": true
+      }
+    ]
+  },
+  "subnets": {
+    "count": 9,
+    "availability_zones": ["ap-northeast-2a", "ap-northeast-2b", "ap-northeast-2c"],
+    "public": [
+      {"name": "aiops-vpc-apne2-dev-public-ap-northeast-2a", "az": "ap-northeast-2a", "cidr": "10.10.0.0/24"},
+      {"name": "aiops-vpc-apne2-dev-public-ap-northeast-2b", "az": "ap-northeast-2b", "cidr": "10.10.1.0/24"},
+      {"name": "aiops-vpc-apne2-dev-public-ap-northeast-2c", "az": "ap-northeast-2c", "cidr": "10.10.2.0/24"}
+    ],
+    "private": [
+      {"name": "aiops-vpc-apne2-dev-private-ap-northeast-2a", "az": "ap-northeast-2a", "cidr": "10.10.10.0/24"},
+      {"name": "aiops-vpc-apne2-dev-private-ap-northeast-2b", "az": "ap-northeast-2b", "cidr": "10.10.11.0/24"},
+      {"name": "aiops-vpc-apne2-dev-private-ap-northeast-2c", "az": "ap-northeast-2c", "cidr": "10.10.12.0/24"}
+    ],
+    "db": [
+      {"name": "aiops-vpc-apne2-dev-db-ap-northeast-2a", "az": "ap-northeast-2a", "cidr": "10.10.20.0/24"},
+      {"name": "aiops-vpc-apne2-dev-db-ap-northeast-2b", "az": "ap-northeast-2b", "cidr": "10.10.21.0/24"},
+      {"name": "aiops-vpc-apne2-dev-db-ap-northeast-2c", "az": "ap-northeast-2c", "cidr": "10.10.22.0/24"}
+    ]
+  },
+  "routing": {
+    "public_route_table": {
+      "name": "aiops-vpc-apne2-dev-public",
+      "has_igw": true,
+      "igw_id": "igw-03f062319b30b404c"
+    },
+    "private_route_tables": [
+      {"name": "aiops-vpc-apne2-dev-private-ap-northeast-2a", "has_nat": true, "nat_id": "nat-035494f9c75438bf9", "has_vpce": true},
+      {"name": "aiops-vpc-apne2-dev-private-ap-northeast-2b", "has_nat": true, "nat_id": "nat-057c3052f3f63bd9e", "has_vpce": true},
+      {"name": "aiops-vpc-apne2-dev-private-ap-northeast-2c", "has_nat": true, "nat_id": "nat-040ac43b0ef5e53a6", "has_vpce": true}
+    ],
+    "db_route_tables": [
+      {"name": "aiops-vpc-apne2-dev-db-ap-northeast-2a", "isolated": true},
+      {"name": "aiops-vpc-apne2-dev-db-ap-northeast-2b", "isolated": true},
+      {"name": "aiops-vpc-apne2-dev-db-ap-northeast-2c", "isolated": true}
+    ]
+  },
+  "ec2_instances": {
+    "count": 2,
+    "items": [
+      {
+        "instance_id": "i-0b1fafec925e9ebba",
+        "name": "aiops-bastion-apne2-dev",
+        "type": "t3.micro",
+        "az": "ap-northeast-2a",
+        "subnet": "public",
+        "public_ip": "3.37.25.127",
+        "key_name": "ec2-key",
+        "imdsv2_required": true
+      },
+      {
+        "instance_id": "i-083d00c9e58e84059",
+        "name": "aiops-kiro-apne2-dev",
+        "type": "m8g.xlarge",
+        "az": "ap-northeast-2a",
+        "subnet": "private",
+        "public_ip": null,
+        "key_name": "ec2-key",
+        "iam_role": "EC2RoleAmazonQ",
+        "imdsv2_required": true
+      }
+    ]
+  },
+  "eks_clusters": {"count": 0},
+  "auto_scaling_groups": {"count": 0},
+  "load_balancers": {"count": 0},
+  "rds": {"count": 0},
+  "cloudwatch_alarms": {"count": 0},
+  "sns_topics": {"count": 0},
+  "backup_plans": {"count": 0},
+  "cloudtrail": {
+    "enabled": true,
+    "name": "aws-cloudtrail-logs-260544022684",
+    "multi_region": true,
+    "log_file_validation": false
+  },
+  "iac": {
+    "terraform_managed": true,
+    "evidence": "All resources tagged with Terraform=true"
+  }
+}

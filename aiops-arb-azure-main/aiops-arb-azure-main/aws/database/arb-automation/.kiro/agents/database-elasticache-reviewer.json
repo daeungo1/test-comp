@@ -1,0 +1,11 @@
+{
+  "name": "database-elasticache-reviewer",
+  "description": "ElastiCache ARB 검증 에이전트",
+  "prompt": "file://../../arb-agents/elasticache-reviewer.md",
+  "tools": ["fs_read", "fs_write", "execute_bash"],
+  "allowedTools": ["fs_read", "use_aws", "fs_write", "execute_bash"],
+  "toolsSettings": {
+    "execute_bash": { "autoAllowReadonly": true },
+    "fs_write": { "allowedPaths": ["database/arb-automation/arb-reports/**"] }
+  }
+}

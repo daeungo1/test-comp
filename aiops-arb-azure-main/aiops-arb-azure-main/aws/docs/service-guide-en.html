@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARB Review Pre-Preparation Guide</title>
+<style>
+  :root {
+    --c-primary: #146eb4;
+    --c-primary-dark: #0f5a94;
+    --c-bg: #f7f8fa;
+    --c-surface: #ffffff;
+    --c-border: #e1e4e8;
+    --c-text: #24292e;
+    --c-muted: #6a737d;
+    --c-code-bg: #f3f4f6;
+    --c-info-bg: #eaf3fb;
+    --c-info-border: #146eb4;
+    --c-warn-bg: #fff8e1;
+    --c-warn-border: #f1b82d;
+    --c-danger-bg: #fdeceb;
+    --c-danger-border: #d73a49;
+    --c-success-bg: #e8f5ec;
+    --c-success-border: #22863a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+    color: var(--c-text);
+    background: var(--c-bg);
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  header {
+    border-bottom: 3px solid var(--c-primary);
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+  }
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    color: var(--c-primary-dark);
+  }
+  .subtitle { color: var(--c-muted); font-size: 15px; }
+  .doc-meta {
+    color: var(--c-muted);
+    font-size: 12.5px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+  .doc-meta .sep { margin: 0 8px; opacity: 0.5; }
+  h2 {
+    margin-top: 48px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--c-border);
+    font-size: 22px;
+    color: var(--c-primary-dark);
+  }
+  h3 { margin-top: 28px; font-size: 18px; }
+  p, li { font-size: 15px; }
+  code {
+    background: var(--c-code-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13.5px;
+  }
+  pre {
+    background: #1f2328;
+    color: #e6edf3;
+    padding: 14px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+    font-size: 14.5px;
+    background: var(--c-surface);
+  }
+  th, td {
+    border: 1px solid var(--c-border);
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #f1f3f5; font-weight: 600; }
+  .step {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-left: 4px solid var(--c-primary);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .step-num {
+    display: inline-block;
+    background: var(--c-primary);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+    font-weight: 700;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+  .step h3 { margin-top: 0; display: inline-block; vertical-align: middle; }
+  .callout {
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin: 16px 0;
+    border-left: 4px solid;
+  }
+  .callout p:first-of-type { margin-top: 0; }
+  .callout p:last-of-type  { margin-bottom: 0; }
+  .callout p { margin: 6px 0; line-height: 1.6; }
+  .callout-info { background: var(--c-info-bg); border-color: var(--c-info-border); }
+  .callout-warn { background: var(--c-warn-bg); border-color: var(--c-warn-border); }
+  .callout-danger { background: var(--c-danger-bg); border-color: var(--c-danger-border); }
+  .callout-success { background: var(--c-success-bg); border-color: var(--c-success-border); }
+  .callout-title { font-weight: 600; margin-bottom: 4px; display: block; }
+  .toc {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 6px;
+    padding: 16px 24px;
+    margin-bottom: 32px;
+  }
+  .toc ol { margin: 8px 0 0; padding-left: 20px; }
+  .toc li { margin: 4px 0; }
+  .toc a { color: var(--c-primary-dark); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .badge-once { background: #dbedff; color: #0366d6; }
+  .badge-region { background: #e1f5d8; color: #22863a; }
+  kbd {
+    background: #f3f4f6;
+    border: 1px solid #d1d5da;
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 12.5px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  /* Download buttons */
+  .download-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0 4px;
+  }
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--c-primary);
+    color: #fff;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s ease;
+    font-family: inherit;
+  }
+  .download-btn:hover { background: var(--c-primary-dark); }
+  .download-btn .icon { font-size: 15px; }
+  .download-btn code {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    padding: 1px 6px;
+    font-size: 13px;
+  }
+  /* Flow diagram */
+  .flow {
+    margin: 16px 0 8px;
+  }
+  .flow-node {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    max-width: 640px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .flow-node-actor {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--c-muted);
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .flow-node-actor.service { color: #0f5a94; }
+  .flow-node-actor.arb { color: #6f42c1; }
+  .flow-node ol {
+    margin: 0;
+    padding-left: 22px;
+  }
+  .flow-node ol li {
+    padding: 2px 0;
+    font-size: 14.5px;
+  }
+  .flow-node-single {
+    padding-left: 22px;
+    font-size: 14.5px;
+  }
+  .flow-arrow {
+    width: 640px;
+    text-align: center;
+    color: var(--c-muted);
+    font-size: 22px;
+    line-height: 1;
+    margin: 6px 0;
+    user-select: none;
+  }
+  footer {
+    margin-top: 64px;
+    padding-top: 16px;
+    border-top: 1px solid var(--c-border);
+    color: var(--c-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="header-top">
+    <h1>ARB Review Pre-Preparation Guide</h1>
+    <div class="doc-meta">
+      v0.2<span class="sep">·</span>Last updated: 2026-08-10
+    </div>
+  </div>
+  <div class="subtitle">
+    This document describes the pre-authorization setup procedure required for the ARB (Architecture Review Board) team to perform an infrastructure review of your service.<br>
+    The process is complete once you deploy 2 CloudFormation stacks.<br>
+    Thank you for your cooperation.
+  </div>
+</header>
+
+<section class="toc">
+  <strong>Table of Contents</strong>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#prereq">Prerequisites</a></li>
+    <li><a href="#step1">STEP 1. Deploy Global Stack <em>(Once in us-east-1)</em></a></li>
+    <li><a href="#step2">STEP 2. Deploy Regional Stack <em>(Repeat for each region with target resources)</em></a></li>
+    <li><a href="#step3">STEP 3. Share Role ARN with the ARB Team</a></li>
+    <li><a href="#step4">STEP 4. Cleanup After Review Completion</a></li>
+    <li><a href="#faq">FAQ / Troubleshooting</a></li>
+  </ol>
+</section>
+
+<!-- ========================= OVERVIEW ========================= -->
+<h2 id="overview">1. Overview</h2>
+
+<p>This process creates <strong>read-only</strong> resources including an IAM Role so that the ARB team can review the resource status of your service's AWS account.</p>
+
+<table>
+  <thead>
+    <tr><th>Item</th><th>Details</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Permission Scope</td><td>AWS managed policy <code>ReadOnlyAccess</code> (no write/delete permissions)</td></tr>
+    <tr><td>Authorized Principal</td><td>Only a specific Role from the ARB team account (<code>260544022684</code>) can Assume this role</td></tr>
+    <tr><td>Deployment Method</td><td>Upload stacks via the CloudFormation web console (AWS CLI not required)</td></tr>
+    <tr><td>Estimated Time</td><td>Approximately 10 minutes (add 3–5 minutes per additional region for regional stacks)</td></tr>
+    <tr><td>After Review</td><td>Deleting the created stacks will also remove all associated resources and permissions</td></tr>
+  </tbody>
+</table>
+
+<h3>Overall Flow</h3>
+<div class="flow">
+
+  <div class="flow-node">
+    <div class="flow-node-actor service">👥 &nbsp;Service Team</div>
+    <ol>
+      <li><strong>STEP 1.</strong> Deploy Global Stack <em>(us-east-1, once)</em> → Creates IAM Role</li>
+      <li><strong>STEP 2.</strong> Deploy Regional Stack <em>(for each region with target resources)</em> → Configures per-region resource access</li>
+      <li><strong>STEP 3.</strong> Share Role ARN with the ARB Team</li>
+    </ol>
+  </div>
+
+  <div class="flow-arrow">▼</div>
+
+  <div class="flow-node">
+    <div class="flow-node-actor arb">🔍 &nbsp;ARB Team</div>
+    <div class="flow-node-single">Performs ARB Review</div>
+  </div>
+
+  <div class="flow-arrow">▼</div>
+
+  <div class="flow-node">
+    <div class="flow-node-actor service">👥 &nbsp;Service Team</div>
+    <div class="flow-node-single"><strong>STEP 4.</strong> Delete stacks after receiving review completion notification</div>
+  </div>
+
+</div>
+
+<!-- ========================= PREREQ ========================= -->
+<h2 id="prereq">2. Prerequisites</h2>
+
+<ul>
+  <li>2 CloudFormation template files (download using the buttons below)
+    <div class="download-group">
+      <button type="button" class="download-btn" onclick="downloadTemplate('tpl-global', '01-global.yaml')">
+        <span class="icon">📥</span>
+        <code>01-global.yaml</code>
+        <span>Download</span>
+      </button>
+      <button type="button" class="download-btn" onclick="downloadTemplate('tpl-regional', '02-regional.yaml')">
+        <span class="icon">📥</span>
+        <code>02-regional.yaml</code>
+        <span>Download</span>
+      </button>
+    </div>
+  </li>
+  <li>Administrator-level (or equivalent) console access to the service AWS account</li>
+  <li>List of regions used by your service</li>
+</ul>
+
+<!-- ========================= STEP 1 ========================= -->
+<h2 id="step1">3. STEP 1. Deploy Global Stack <span class="badge badge-once">Once in us-east-1</span></h2>
+
+<div class="step">
+<span class="step-num">1</span><h3>Open CloudFormation in the AWS Console</h3>
+<ol>
+  <li>Log in to the service AWS account.</li>
+  <li>Change the <strong>Region selector</strong> in the top-right corner to <strong>US East (N. Virginia) · us-east-1</strong>.
+    <div class="callout callout-info">
+      <span class="callout-title">💡 Deployment Region Note</span>
+      IAM is a global resource, so it works the same regardless of which region you deploy from.<br>
+      However, this guide uses <strong>us-east-1</strong> as the standard region for management convenience.<br>
+      You may deploy from any other region you are comfortable with.
+    </div>
+  </li>
+  <li>Type <code>CloudFormation</code> in the service search bar and navigate to it.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">2</span><h3>Create Stack</h3>
+<ol>
+  <li>In the left menu, click <strong>Stacks</strong> → then <strong>Create stack</strong> (top-right) → <strong>With new resources (standard)</strong>.</li>
+  <li><strong>Prepare template</strong>: Select <em>Choose an existing template</em>.</li>
+  <li><strong>Template source</strong>: Select <em>Upload a template file</em> and upload <code>01-global.yaml</code>.</li>
+  <li>Click <strong>Next</strong>.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">3</span><h3>Enter Stack Name</h3>
+<ol>
+  <li><strong>Stack name</strong>: <code>arb-readonly-global</code> (recommended)</li>
+  <li>There are no parameter input fields. Click <strong>Next</strong>.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">4</span><h3>Stack Options and Review</h3>
+<ol>
+  <li>On the <strong>Configure stack options</strong> page, leave most settings at their defaults. At the bottom, in the <strong>Capabilities</strong> section, check the checkbox:
+    <pre><code>☑ I acknowledge that AWS CloudFormation might create IAM resources with custom names.</code></pre>
+    <div class="callout callout-info">
+      This template creates an IAM Role with the fixed name <code>ARB-ReadOnly-Role</code>, which requires checking the above item.<br>
+      You cannot proceed to the next step without checking it.
+    </div>
+  </li>
+  <li>Click <strong>Next</strong>.</li>
+  <li>On the <strong>Review</strong> page, verify the inputs and click <strong>Submit</strong>.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">5</span><h3>Confirm Deployment Completion</h3>
+<ul>
+  <li>When the Status shows <strong>CREATE_COMPLETE</strong>, the deployment is successful (takes 1–2 minutes).</li>
+  <li>If you see <strong>CREATE_FAILED</strong>, refer to the <a href="#faq">FAQ</a>.</li>
+</ul>
+</div>
+
+<!-- ========================= STEP 2 ========================= -->
+<h2 id="step2">4. STEP 2. Deploy Regional Stack <span class="badge badge-region">Repeat for each region with target resources</span></h2>
+
+<p>Deploy this stack in every region that contains at least one of the <strong>target resources</strong> listed below.<br>
+If your service uses multiple regions, repeat this step for each region.</p>
+
+<div class="callout callout-info">
+  <span class="callout-title">💡 Prepare the Role ARN Before Starting</span>
+  <p>
+    This stack requires the ARN of the IAM Role created in STEP 1 as a parameter.<br>
+    If you haven't noted it yet, go to the <code>arb-readonly-global</code> stack in us-east-1 CloudFormation → <strong>Outputs</strong> tab → copy the <code>RoleArn</code> value.
+  </p>
+  <p>(You will use the same value in STEP 3 as well)</p>
+</div>
+
+<h3>Target Resources</h3>
+
+<p>The regional stack configures ARB read access for the following resource types.</p>
+
+<table>
+  <thead>
+    <tr><th>Resource Type</th><th>Corresponding Parameter</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>EKS Cluster</td>
+      <td><code>EksClusterName1</code> ~ <code>EksClusterName5</code></td>
+      <td>Creates an Access Entry (ViewOnly) per cluster</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Fill in only the parameters that correspond to resources you use; leave the rest blank.<br>
+If there are no target resources in a given region, you do not need to deploy this stack there.<br>
+(You may deploy with empty values for future extensibility if you prefer.)</p>
+
+<div class="step">
+<span class="step-num">1</span><h3>Navigate to the Target Region</h3>
+<ol>
+  <li>Change the region selector in the top-right corner to the region you want to deploy in. <em>e.g., Asia Pacific (Seoul) · ap-northeast-2</em></li>
+  <li>Navigate to the CloudFormation service.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">2</span><h3>Create Stack and Upload Template</h3>
+<ol>
+  <li><strong>Create stack</strong> → <strong>With new resources (standard)</strong>.</li>
+  <li>Select <em>Upload a template file</em>, upload <code>02-regional.yaml</code>, and click <strong>Next</strong>.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">3</span><h3>Enter Parameters</h3>
+<ol>
+  <li><strong>Stack name</strong>: <code>arb-readonly-regional</code> (recommended)</li>
+  <li>Fill in the <strong>Required section</strong>:
+    <table>
+      <thead>
+        <tr><th>Parameter</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>ARB Role ARN</strong></td>
+          <td>Copy and paste the <code>RoleArn</code> value from the <strong>Outputs</strong> tab of the <code>arb-readonly-global</code> stack created in STEP 1<br>
+            <code>arn:aws:iam::&lt;Account ID&gt;:role/ARB-ReadOnly-Role</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+  <li>Fill in the <strong>EKS Clusters in this region (optional, up to 5) section</strong>:
+    <ul>
+      <li>Enter the EKS cluster names in this region starting from <strong>EKS cluster name #1</strong>.</li>
+      <li>Fill in only as many fields as you have clusters; leave the rest blank.</li>
+    </ul>
+    <div class="callout callout-info">
+      <span class="callout-title">💡 How to Find EKS Cluster Names</span>
+      Check in the console under <strong>Elastic Kubernetes Service</strong> → <strong>Clusters</strong>, or<br>
+      use the CLI command <code>aws eks list-clusters --region &lt;region&gt;</code>.
+    </div>
+  </li>
+  <li>Click <strong>Next</strong>.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">4</span><h3>Stack Options and Review</h3>
+<ol>
+  <li>On the <strong>Configure stack options</strong> page, leave defaults and click <strong>Next</strong>.<br>
+    This stack does not create IAM Roles, so the Capabilities checkbox will not appear.</li>
+  <li>On the <strong>Review</strong> page, verify the inputs and click <strong>Submit</strong>.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">5</span><h3>Repeat for Other Regions</h3>
+<p>Repeat steps 1–4 above for each region that has target resources.</p>
+
+<div class="callout callout-success">
+  <span class="callout-title">✅ STEP 2 Completion Criteria</span>
+  STEP 2 is complete when the <code>arb-readonly-regional</code> stack shows <strong>CREATE_COMPLETE</strong> status in all regions with target resources.
+</div>
+</div>
+
+<!-- ========================= STEP 3 ========================= -->
+<h2 id="step3">5. STEP 3. Share Role ARN with the ARB Team</h2>
+
+<p>Once all stacks are deployed, share the Role ARN with the ARB team.</p>
+
+<div class="step">
+<span class="step-num">1</span><h3>Copy the Role ARN</h3>
+<ol>
+  <li>Change the region to <strong>us-east-1</strong>.</li>
+  <li>Go to CloudFormation → click the <code>arb-readonly-global</code> stack.</li>
+  <li>Navigate to the <strong>Outputs</strong> tab.</li>
+  <li>Copy the <strong>Value</strong> from the row where <strong>Key</strong> is <code>RoleArn</code>.
+    <pre><code>arn:aws:iam::&lt;Service Account ID&gt;:role/ARB-ReadOnly-Role</code></pre>
+  </li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">2</span><h3>Send to the ARB Team</h3>
+<div class="callout callout-success">
+  <span class="callout-title">✅ What to Share</span>
+  Send the Role ARN copied above to the ARB team contact.
+</div>
+<p>Once shared, the pre-preparation phase is complete.<br>
+Wait for the ARB team to perform the review, and proceed to <a href="#step4">STEP 4</a> after receiving the review completion notification.</p>
+</div>
+
+<!-- ========================= STEP 4 ========================= -->
+<h2 id="step4">6. STEP 4. Cleanup After Review Completion</h2>
+
+<p>After receiving the review completion notification from the ARB team, delete the created stacks.<br>
+<strong>The deletion order is important.</strong></p>
+
+<div class="callout callout-danger">
+  <span class="callout-title">⚠️ Deletion Order</span>
+  <p>You must <strong>delete all regional stacks first</strong>, then <strong>delete the global stack</strong>.</p>
+  <p>If you do not follow this order, the IAM Role may be deleted first, leaving the Principal ARN referenced by regional resources in an orphaned state.</p>
+</div>
+
+<div class="step">
+<span class="step-num">1</span><h3>Delete Regional Stacks (in all deployed regions)</h3>
+<ol>
+  <li>Navigate to the CloudFormation console in each region.</li>
+  <li>Select the <code>arb-readonly-regional</code> stack and click <strong>Delete</strong>.</li>
+  <li>Once the Status shows <strong>DELETE_COMPLETE</strong>, move to the next region.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">2</span><h3>Delete Global Stack (us-east-1)</h3>
+<ol>
+  <li>Change the region to <strong>us-east-1</strong>.</li>
+  <li>Select the <code>arb-readonly-global</code> stack and click <strong>Delete</strong>.</li>
+  <li>Once the Status shows <strong>DELETE_COMPLETE</strong>, the cleanup is finished.</li>
+</ol>
+</div>
+
+<div class="step">
+<span class="step-num">3</span><h3>(If Applicable) Delete Auto-Generated S3 Buckets</h3>
+<ol>
+  <li>In the S3 console of each region where you deployed STEP 1 and STEP 2, look for buckets starting with <code>cf-templates-</code>.</li>
+  <li>Check the <strong>creation date</strong> of the bucket to confirm it matches <strong>the time when you deployed STEP 1 / STEP 2</strong>.</li>
+  <li>If the creation date matches your deployment time, AWS auto-created this bucket during template upload, so it is safe to delete. <strong>Empty</strong> the bucket first, then <strong>Delete</strong> it.</li>
+  <li>If the creation date is earlier than your deployment, the bucket existed before, so leave it as is.</li>
+</ol>
+<p>For more details, see <a href="#faq">FAQ</a>.</p>
+</div>
+
+<div class="callout callout-success">
+  <span class="callout-title">✅ Cleanup Complete</span>
+  Once all stacks are deleted, the ARB team can no longer access your service account.
+</div>
+
+<!-- ========================= FAQ ========================= -->
+<h2 id="faq">7. FAQ / Troubleshooting</h2>
+
+<h3>Q1. Can I change the Role name?</h3>
+<p>No. The ARB team's automation tools operate based on the name <code>ARB-ReadOnly-Role</code>.<br>
+The RoleArn parameter in the regional stack also requires this name to pass validation.</p>
+
+<h3>Q2. I'm getting <code>CREATE_FAILED</code> in STEP 1.</h3>
+<p>It is likely that a Role with the same name (<code>ARB-ReadOnly-Role</code>) already exists in the account. Check for duplicate Roles in the IAM console. If it serves the same purpose, find and reuse the existing stack, or delete the conflicting Role and retry.<br>
+If you lack permissions to create Roles, please contact your account administrator.</p>
+
+<h3>Q3. I entered the wrong EKS cluster name in STEP 2.</h3>
+<p>If you enter a non-existent cluster name, the Access Entry creation will fail.<br>
+Delete the stack and redeploy with the correct name, or use <strong>Update stack</strong> to modify the parameters.</p>
+
+<h3>Q4. I need to deploy in an additional region. Do I have to start over?</h3>
+<p>No.<br>
+Simply deploy <code>02-regional.yaml</code> in the new region's CloudFormation console.<br>
+The global stack remains unchanged.</p>
+
+<h3>Q5. I created additional resources during the review. Do I need to redeploy?</h3>
+<p>The IAM Role uses the <code>ReadOnlyAccess</code> managed policy, so newly created resources are automatically queryable.<br>
+However, if a <strong>new EKS cluster</strong> was created, use <strong>Update stack</strong> on the regional stack in that region to add the cluster name.</p>
+
+<h3>Q6. Doesn't this Role have overly broad permissions?</h3>
+<p><code>ReadOnlyAccess</code> is an AWS-managed policy that <strong>only includes view permissions (Get/List/Describe) for all services</strong>.<br>
+Write/modify/delete operations are not possible.<br>
+Additionally, the Trust Policy restricts Assume access to only a specific Role from the ARB account, blocking external access.</p>
+
+<h3>Q7. What is the <code>cf-templates-*</code> bucket?</h3>
+<p>When you upload a CloudFormation template file using <strong>Upload a template file</strong> for the first time,<br>
+AWS automatically creates a <code>cf-templates-*</code> bucket in that region and stores the template file there.<br>
+(If a <code>cf-templates-*</code> bucket already exists in that region, the existing bucket is reused.)<br></p>
+<p>This bucket is not part of the stack resources—it is managed separately by CloudFormation itself, so it is not deleted when you delete the stack.<br>
+Since this is an auto-created bucket, your organization's S3 security policies may not be applied to it, which could cause it to be flagged during security audits.<br>
+<strong>If it was created specifically for this deployment</strong>, we recommend deleting it after cleanup.</p>
+
+<footer>
+  Contact: ARB Team representative<br>
+  This document is provided as part of the ARB review process. There is no obligation to retain it after the review is complete and stacks are deleted.
+</footer>
+
+</div>
+
+<!-- ========================= Embedded CloudFormation templates ========================= -->
+<script type="text/yaml" id="tpl-global">
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  ARB Review - Global stack. Creates the read-only IAM Role assumed by the ARB team.
+  Deploy this stack ONCE in us-east-1.
+  After deployment, share the RoleArn output with the ARB team.
+
+# -----------------------------------------------------------------------------
+# ARB account information is hardcoded here intentionally.
+# Target teams do not need to (and cannot) change these values.
+# -----------------------------------------------------------------------------
+# ARB Account ID : 260544022684
+# ARB Principal  : arn:aws:iam::260544022684:role/RBAC_SCOP_Q_DEVELOPER
+# -----------------------------------------------------------------------------
+
+Resources:
+  ArbReadOnlyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ARB-ReadOnly-Role
+      Description: Read-only role assumed by the ARB team to perform architecture review.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::260544022684:role/RBAC_SCOP_Q_DEVELOPER
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      MaxSessionDuration: 3600
+      Tags:
+        - Key: Purpose
+          Value: ARB-Review
+        - Key: ManagedBy
+          Value: CloudFormation
+
+Outputs:
+  RoleArn:
+    Description: Share this Role ARN with the ARB team. Also used as a parameter for the regional stack.
+    Value: !GetAtt ArbReadOnlyRole.Arn
+    Export:
+      Name: ARB-ReadOnly-Role-Arn
+
+  RoleName:
+    Description: Name of the created IAM role.
+    Value: !Ref ArbReadOnlyRole
+</script>
+
+<script type="text/yaml" id="tpl-regional">
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  ARB Review - Regional stack. Grants the ARB IAM role read-only access to regional
+  resources that require per-region configuration (e.g., EKS Access Entries).
+  Deploy this stack in EVERY region your service uses. Leave fields blank for
+  resources you do not have in that region.
+
+# -----------------------------------------------------------------------------
+# Extension points:
+#   - To grant the ARB role access to additional resource types that require
+#     per-region configuration (e.g., OpenSearch, MSK, cross-account sharing),
+#     add new Parameters / Conditions / Resources sections below without changing
+#     the overall structure. Keep each resource group optional (Conditions)
+#     so target teams can deploy a single regional stack everywhere.
+# -----------------------------------------------------------------------------
+
+Parameters:
+  RoleArn:
+    Type: String
+    Description: >
+      Role ARN from the global stack output (01-global.yaml -> Outputs -> RoleArn).
+      Example: arn:aws:iam::111122223333:role/ARB-ReadOnly-Role
+    AllowedPattern: '^arn:aws:iam::[0-9]{12}:role/ARB-ReadOnly-Role$'
+    ConstraintDescription: >
+      Must be the ARB-ReadOnly-Role ARN from the global stack output.
+
+  # --- EKS Access Entries -----------------------------------------------------
+  # Up to 5 clusters per region. Leave blank if you have none or fewer clusters.
+  EksClusterName1:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #1 in THIS region. Leave blank if none.
+  EksClusterName2:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #2 in THIS region.
+  EksClusterName3:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #3 in THIS region.
+  EksClusterName4:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #4 in THIS region.
+  EksClusterName5:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #5 in THIS region.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Required
+        Parameters:
+          - RoleArn
+      - Label:
+          default: EKS Clusters in this region (optional, up to 5)
+        Parameters:
+          - EksClusterName1
+          - EksClusterName2
+          - EksClusterName3
+          - EksClusterName4
+          - EksClusterName5
+    ParameterLabels:
+      RoleArn:
+        default: ARB Role ARN (from global stack output)
+      EksClusterName1:
+        default: EKS cluster name #1
+      EksClusterName2:
+        default: EKS cluster name #2
+      EksClusterName3:
+        default: EKS cluster name #3
+      EksClusterName4:
+        default: EKS cluster name #4
+      EksClusterName5:
+        default: EKS cluster name #5
+
+Conditions:
+  HasEks1: !Not [!Equals [!Ref EksClusterName1, '']]
+  HasEks2: !Not [!Equals [!Ref EksClusterName2, '']]
+  HasEks3: !Not [!Equals [!Ref EksClusterName3, '']]
+  HasEks4: !Not [!Equals [!Ref EksClusterName4, '']]
+  HasEks5: !Not [!Equals [!Ref EksClusterName5, '']]
+
+Resources:
+  # --- EKS Access Entries -----------------------------------------------------
+  EksAccessEntry1:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks1
+    Properties:
+      ClusterName: !Ref EksClusterName1
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+  EksAccessEntry2:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks2
+    Properties:
+      ClusterName: !Ref EksClusterName2
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+  EksAccessEntry3:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks3
+    Properties:
+      ClusterName: !Ref EksClusterName3
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+  EksAccessEntry4:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks4
+    Properties:
+      ClusterName: !Ref EksClusterName4
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+  EksAccessEntry5:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks5
+    Properties:
+      ClusterName: !Ref EksClusterName5
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+Outputs:
+  Region:
+    Description: Region this stack was deployed in.
+    Value: !Ref AWS::Region
+
+  ConfiguredEksClusters:
+    Description: EKS clusters configured with an ARB access entry in this region.
+    Value: !Join
+      - ','
+      - - !If [HasEks1, !Ref EksClusterName1, !Ref 'AWS::NoValue']
+        - !If [HasEks2, !Ref EksClusterName2, !Ref 'AWS::NoValue']
+        - !If [HasEks3, !Ref EksClusterName3, !Ref 'AWS::NoValue']
+        - !If [HasEks4, !Ref EksClusterName4, !Ref 'AWS::NoValue']
+        - !If [HasEks5, !Ref EksClusterName5, !Ref 'AWS::NoValue']
+</script>
+
+<script>
+  function downloadTemplate(elementId, filename) {
+    var el = document.getElementById(elementId);
+    if (!el) { alert('Template not found: ' + elementId); return; }
+    // textContent includes the leading newline; trim once to keep YAML tidy.
+    var content = el.textContent.replace(/^\n/, '');
+    var blob = new Blob([content], { type: 'text/yaml;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+  }
+</script>
+
+</body>
+</html>

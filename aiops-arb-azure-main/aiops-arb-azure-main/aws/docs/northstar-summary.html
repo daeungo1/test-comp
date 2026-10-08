@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NorthStar T/F 현황 요약</title>
+<style>
+  :root {
+    --bg: #0f1117; --card: #1a1d27; --border: #2d3148;
+    --purple: #7c6af7; --purple-l: #a78bfa;
+    --green: #4ade80; --red: #f87171; --orange: #fb923c;
+    --blue: #60a5fa; --teal: #2dd4bf;
+    --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 26px; font-weight: 800; color: var(--purple); margin-bottom: 6px; }
+  .subtitle { color: var(--dim); font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 17px; font-weight: 700; color: var(--purple-l);
+       margin: 28px 0 12px; border-left: 4px solid var(--purple); padding-left: 12px; }
+  h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 14px 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+          padding: 18px 22px; margin-bottom: 16px; }
+  p { color: var(--muted); font-size: 14px; margin: 6px 0; }
+  ul { padding-left: 20px; }
+  li { color: var(--muted); font-size: 14px; margin: 5px 0; }
+  li strong { color: var(--text); }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 4px;
+           font-size: 11px; font-weight: 700; }
+  .b-green { background: #14532d; color: var(--green); }
+  .b-blue  { background: #1e3a5f; color: var(--blue); }
+  .b-orange{ background: #431407; color: var(--orange); }
+  .b-purple{ background: #2d1f6e; color: var(--purple-l); }
+  .b-red   { background: #450a0a; color: var(--red); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { background: #252840; color: var(--muted); padding: 8px 12px; text-align: left;
+       font-size: 11px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+  td strong { color: var(--text); }
+  .tip  { background: #1e1a3a; border-left: 3px solid var(--purple); border-radius: 4px;
+          padding: 10px 14px; margin: 10px 0; font-size: 13px; color: var(--muted); }
+  .warn { background: #1f1208; border-left: 3px solid var(--orange); border-radius: 4px;
+          padding: 10px 14px; margin: 10px 0; font-size: 13px; color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  footer { margin-top: 60px; padding: 20px 0; border-top: 1px solid var(--border);
+           text-align: center; color: var(--dim); font-size: 12px; }
+  code { background: #0f1117; padding: 2px 7px; border-radius: 4px;
+         font-size: 12px; color: var(--purple-l); font-family: monospace; }
+  .oneliner { background: #1a1d27; border: 1px solid var(--purple); border-radius: 8px;
+              padding: 14px 18px; margin: 16px 0; font-size: 15px; color: var(--purple-l);
+              font-weight: 600; text-align: center; }
+  .status-done    { color: var(--green); font-weight: 700; }
+  .status-wip     { color: var(--orange); font-weight: 700; }
+  .status-pending { color: var(--dim); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🌟 NorthStar T/F 현황 요약</h1>
+  <p class="subtitle">작성일: 2026-08-10 &nbsp;|&nbsp; 출처: aiops-northstar 레포 분석 &nbsp;|&nbsp; Cloud Operation Group</p>
+
+  <!-- 한 줄 요약 -->
+  <div class="oneliner">
+    💡 NorthStar는 그룹 내 여러 과제가 AI Agent를 쉽게 도입할 수 있도록<br>
+    <strong>공통 플랫폼(인프라 + 템플릿)을 만들어 보급</strong>하는 T/F입니다.
+  </div>
+
+  <!-- ARB vs 하네스 비교 -->
+  <h2>⚖️ ARB(KIRO 방식) vs 하네스(NorthStar 방식) 차이</h2>
+  <div class="card">
+    <table>
+      <tr>
+        <th>구분</th>
+        <th>ARB (aiops-arb-kiro)</th>
+        <th>하네스 (NorthStar)</th>
+      </tr>
+      <tr>
+        <td><strong>실행 환경</strong></td>
+        <td>EC2에서 <code>kiro-cli</code> 프로세스 직접 실행</td>
+        <td>AWS ECS Fargate 컨테이너 + Bedrock AgentCore</td>
+      </tr>
+      <tr>
+        <td><strong>Agent 정의</strong></td>
+        <td><code>.kiro/agents/*.json</code> + 프롬프트 파일</td>
+        <td><code>AGENTS.md</code> + 스킬(skills) 폴더</td>
+      </tr>
+      <tr>
+        <td><strong>인프라 구성</strong></td>
+        <td>수동 EC2 설치, systemd 서비스 등록</td>
+        <td>Terraform 코드로 자동 배포</td>
+      </tr>
+      <tr>
+        <td><strong>스킬 배포</strong></td>
+        <td>로컬 파일 수정 후 서비스 재시작</td>
+        <td>S3 업로드 → EFS 마운트로 Agent 자동 인식</td>
+      </tr>
+      <tr>
+        <td><strong>Slack 연동</strong></td>
+        <td>Python 스크립트 (<code>slack_bot.py</code>)</td>
+        <td>ECS Fargate 컨테이너 (slack-gateway) 분리 운영</td>
+      </tr>
+      <tr>
+        <td><strong>보안</strong></td>
+        <td>EC2 IAM Role</td>
+        <td>IAM Role + Bedrock Guardrail (답변 필터링) + 관측 로그</td>
+      </tr>
+      <tr>
+        <td><strong>관리 복잡도</strong></td>
+        <td>단순 — 한 서버에 모든 것</td>
+        <td>복잡하지만 확장 가능 — 과제별 독립 환경</td>
+      </tr>
+    </table>
+    <div class="tip" style="margin-top:14px">
+      💡 <strong>한 줄 비유</strong>: ARB는 "한 서버에 직접 설치한 방식", 하네스는 "클라우드 네이티브 컨테이너 방식"
+    </div>
+  </div>
+
+  <!-- 하네스 설명 -->
+  <h2>🔧 하네스(Harness)가 뭔지 쉽게 설명</h2>
+  <div class="card">
+    <p style="margin-bottom:14px">과제팀이 AI Agent를 쓰고 싶을 때 인프라를 처음부터 만들지 않아도 되도록, NorthStar가 미리 만들어둔 <strong>표준 틀</strong>입니다.</p>
+    <div class="grid2">
+      <div>
+        <h3>🔌 Slack Gateway</h3>
+        <p>Slack 메시지를 받아서 AI에 전달하는 중계 서버.<br>각 과제별로 독립된 컨테이너로 운영됩니다.</p>
+        <h3>🤖 Harness (Agent 실행 환경)</h3>
+        <p>Agent들이 실제로 실행되는 컨테이너 환경.<br>Bedrock AgentCore 위에서 동작합니다.</p>
+      </div>
+      <div>
+        <h3>🛠️ Skills (도구 모음)</h3>
+        <p>Agent가 사용할 수 있는 기능 모음.<br>S3에 업로드해두면 Agent가 자동으로 읽어서 사용합니다.</p>
+        <h3>🛡️ Bedrock Guardrail</h3>
+        <p>AI 답변에서 욕설·민감정보가 나오지 않도록<br>AWS가 강제로 필터링하는 보안 레이어입니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 구성도 -->
+  <h2>🏗️ 전체 구조 (간략)</h2>
+  <div class="card">
+    <table>
+      <tr><th>레이어</th><th>구성 요소</th><th>역할</th></tr>
+      <tr>
+        <td><span class="badge b-purple">중앙 계정</span></td>
+        <td>ECR, S3(스킬 원본), S3(Bedrock 로그)</td>
+        <td>스킬 원본 관리, 모델 호출 로그 수집</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-blue">배포 계정 (과제별)</span></td>
+        <td>VPC, ECS Fargate, DynamoDB, EFS, SSM</td>
+        <td>각 과제의 Slack Gateway + Harness 실행 환경</td>
+      </tr>
+      <tr>
+        <td><span class="badge b-green">대상 계정 (N개)</span></td>
+        <td>IAM Role (AIOps-Readonly)</td>
+        <td>Agent가 AWS 리소스를 읽기 전용으로 조회</td>
+      </tr>
+    </table>
+    <div class="tip" style="margin-top:12px">
+      🔑 Slack → (WebSocket) → Gateway → AgentCore Harness → Bedrock 모델 → 대상 AWS 계정 (1-hop AssumeRole)
+    </div>
+  </div>
+
+  <!-- 전파 현황 -->
+  <h2>📦 현재 전파 현황 (실제 배포된 과제)</h2>
+  <div class="card">
+    <table>
+      <tr><th>과제</th><th>폴더명</th><th>상태</th><th>비고</th></tr>
+      <tr>
+        <td><strong>삼성페이</strong></td><td><code>spay</code></td>
+        <td><span class="status-done">✅ 완료</span></td>
+        <td>파일럿 1호 과제 (2026-07-28)</td>
+      </tr>
+      <tr>
+        <td><strong>SmartThings</strong></td><td><code>smartthings</code></td>
+        <td><span class="status-done">✅ 완료</span></td><td></td>
+      </tr>
+      <tr>
+        <td><strong>B2B Knox</strong></td><td><code>b2bknox</code></td>
+        <td><span class="status-done">✅ 완료</span></td>
+        <td>대상 계정 11개 (가장 많음)</td>
+      </tr>
+      <tr>
+        <td><strong>Bixby</strong></td><td><code>bixby</code></td>
+        <td><span class="status-done">✅ 완료</span></td>
+        <td>Agent 31개 (가장 많음)</td>
+      </tr>
+      <tr>
+        <td><strong>GS Next (갤럭시스토어)</strong></td><td><code>gsnext</code></td>
+        <td><span class="status-done">✅ 완료</span></td><td></td>
+      </tr>
+      <tr>
+        <td><strong>RCS</strong></td><td><code>rcs</code></td>
+        <td><span class="status-done">✅ 완료</span></td><td></td>
+      </tr>
+      <tr>
+        <td><strong>Samsung Health</strong></td><td><code>shealth</code></td>
+        <td><span class="status-done">✅ 완료</span></td><td></td>
+      </tr>
+      <tr>
+        <td><strong>NorthStar (자체)</strong></td><td><code>northstar</code></td>
+        <td><span class="status-done">✅ 완료</span></td><td>T/F 자체 운영 환경</td>
+      </tr>
+      <tr>
+        <td><strong>mgmt (운영관리)</strong></td><td><code>mgmt</code></td>
+        <td><span class="status-done">✅ 완료</span></td><td></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- 제공 Agent 템플릿 -->
+  <h2>🤖 제공되는 Agent 템플릿 목록</h2>
+  <div class="card">
+    <p style="margin-bottom:12px"><code>_templates/agents/</code> 폴더에 과제팀이 바로 쓸 수 있는 표준 Agent 14종이 포함되어 있습니다.</p>
+    <div class="grid2">
+      <ul>
+        <li>🚨 <strong>alert-analyzer-agent</strong> — 알람 분석</li>
+        <li>☁️ <strong>aws-specialist-agent</strong> — AWS 전문 질의</li>
+        <li>🔄 <strong>change-management-agent</strong> — 변경 관리</li>
+        <li>🔍 <strong>code-reviewer-agent</strong> — 코드 리뷰</li>
+        <li>💰 <strong>cost-agent</strong> — 비용 분석</li>
+        <li>🗄️ <strong>db-architecture-agent</strong> — DB 아키텍처 점검</li>
+        <li>📊 <strong>db-monitoring-agent</strong> — DB 모니터링</li>
+      </ul>
+      <ul>
+        <li>🔧 <strong>db-patch-agent</strong> — DB 패치 관리</li>
+        <li>📈 <strong>db-query-analytics-agent</strong> — 쿼리 분석</li>
+        <li>⚡ <strong>db-query-executor-agent</strong> — 쿼리 실행</li>
+        <li>📋 <strong>db-request-report-agent</strong> — DB 요청 리포트</li>
+        <li>☸️ <strong>kubernetes-agent</strong> — Kubernetes 운영</li>
+        <li>🎯 <strong>orchestrator-agent</strong> — 멀티 Agent 조율</li>
+        <li>🛡️ <strong>sre-agent</strong> — SRE 운영</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 진행 중 항목 -->
+  <h2>🚧 현재 진행 중인 항목 (2026-08-10 기준)</h2>
+  <div class="card">
+    <table>
+      <tr><th>카테고리</th><th>항목</th><th>상태</th><th>마감</th></tr>
+      <tr>
+        <td>프로세스마이닝</td>
+        <td>배포/DR전환/카오스엔지니어링 AS-IS → TO-BE 개선 도출</td>
+        <td><span class="status-wip">🔄 진행 중</span></td>
+        <td>08-11</td>
+      </tr>
+      <tr>
+        <td>프로세스마이닝</td>
+        <td>Cloud운영그룹 전체 업무 프로세스 SOP 정립</td>
+        <td><span class="status-wip">🔄 진행 중</span></td>
+        <td>08-25</td>
+      </tr>
+      <tr>
+        <td>에이전트 템플릿</td>
+        <td>주요 과제 전파 일정 수립</td>
+        <td><span class="status-wip">🔄 진행 중</span></td>
+        <td>08-03 (지연)</td>
+      </tr>
+      <tr>
+        <td>에이전트 템플릿</td>
+        <td>DevOps 에이전트 PoC</td>
+        <td><span class="status-pending">⏳ 시작 전</span></td>
+        <td>08-12</td>
+      </tr>
+      <tr>
+        <td>거버넌스 플랫폼</td>
+        <td>프론트 시스템 구성 (웹콘솔)</td>
+        <td><span class="status-wip">🔄 진행 중</span></td>
+        <td>08-25</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ARB와의 관계 -->
+  <h2>🔗 ARB와 NorthStar의 관계</h2>
+  <div class="card">
+    <div class="warn">
+      ⚠️ ARB는 현재 <strong>KIRO CLI 방식</strong>으로 NorthStar 하네스와 다른 방식으로 동작합니다.<br>
+      NorthStar 목표 중 하나가 ARB 같은 과제들도 하네스로 전환하는 것이나,<br>
+      현재는 <strong>SCP(서비스 제어 정책) 계정 권한 제약</strong>으로 AgentCore 연동이 보류된 상태입니다.
+    </div>
+    <br>
+    <table>
+      <tr><th>구분</th><th>ARB 현재</th><th>하네스 전환 시 변경점</th></tr>
+      <tr>
+        <td>Agent 실행</td>
+        <td>kiro-cli subprocess</td>
+        <td>Bedrock AgentCore (ECS Fargate)</td>
+      </tr>
+      <tr>
+        <td>Agent 정의</td>
+        <td><code>.kiro/agents/*.json</code></td>
+        <td><code>AGENTS.md</code> + skills 폴더</td>
+      </tr>
+      <tr>
+        <td>인프라 관리</td>
+        <td>수동 (EC2, systemd)</td>
+        <td>Terraform 자동화</td>
+      </tr>
+      <tr>
+        <td>Slack Bot</td>
+        <td>Python slack_bot.py</td>
+        <td>slack-gateway 컨테이너</td>
+      </tr>
+    </table>
+  </div>
+
+  <footer>Cloud Operation Group · NorthStar T/F 현황 요약 · 2026-08-10</footer>
+</div>
+</body>
+</html>

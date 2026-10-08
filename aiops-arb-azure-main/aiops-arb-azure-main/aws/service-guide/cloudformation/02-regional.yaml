@@ -1,0 +1,161 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  ARB Review - Regional stack. Grants the ARB IAM role read-only access to regional
+  resources that require per-region configuration (e.g., EKS Access Entries).
+  Deploy this stack in EVERY region your service uses. Leave fields blank for
+  resources you do not have in that region.
+
+# -----------------------------------------------------------------------------
+# Extension points:
+#   - To grant the ARB role access to additional resource types that require
+#     per-region configuration (e.g., OpenSearch, MSK, cross-account sharing),
+#     add new Parameters / Conditions / Resources sections below without changing
+#     the overall structure. Keep each resource group optional (Conditions)
+#     so target teams can deploy a single regional stack everywhere.
+# -----------------------------------------------------------------------------
+
+Parameters:
+  RoleArn:
+    Type: String
+    Description: >
+      Role ARN from the global stack output (01-global.yaml -> Outputs -> RoleArn).
+      Example: arn:aws:iam::111122223333:role/ARB-ReadOnly-Role
+    AllowedPattern: '^arn:aws:iam::[0-9]{12}:role/ARB-ReadOnly-Role$'
+    ConstraintDescription: >
+      Must be the ARB-ReadOnly-Role ARN from the global stack output.
+
+  # --- EKS Access Entries -----------------------------------------------------
+  # Up to 5 clusters per region. Leave blank if you have none or fewer clusters.
+  EksClusterName1:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #1 in THIS region. Leave blank if none.
+  EksClusterName2:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #2 in THIS region.
+  EksClusterName3:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #3 in THIS region.
+  EksClusterName4:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #4 in THIS region.
+  EksClusterName5:
+    Type: String
+    Default: ''
+    Description: (Optional) EKS cluster name #5 in THIS region.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Required
+        Parameters:
+          - RoleArn
+      - Label:
+          default: EKS Clusters in this region (optional, up to 5)
+        Parameters:
+          - EksClusterName1
+          - EksClusterName2
+          - EksClusterName3
+          - EksClusterName4
+          - EksClusterName5
+    ParameterLabels:
+      RoleArn:
+        default: ARB Role ARN (from global stack output)
+      EksClusterName1:
+        default: EKS cluster name #1
+      EksClusterName2:
+        default: EKS cluster name #2
+      EksClusterName3:
+        default: EKS cluster name #3
+      EksClusterName4:
+        default: EKS cluster name #4
+      EksClusterName5:
+        default: EKS cluster name #5
+
+Conditions:
+  HasEks1: !Not [!Equals [!Ref EksClusterName1, '']]
+  HasEks2: !Not [!Equals [!Ref EksClusterName2, '']]
+  HasEks3: !Not [!Equals [!Ref EksClusterName3, '']]
+  HasEks4: !Not [!Equals [!Ref EksClusterName4, '']]
+  HasEks5: !Not [!Equals [!Ref EksClusterName5, '']]
+
+Resources:
+  # --- EKS Access Entries -----------------------------------------------------
+  EksAccessEntry1:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks1
+    Properties:
+      ClusterName: !Ref EksClusterName1
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+  EksAccessEntry2:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks2
+    Properties:
+      ClusterName: !Ref EksClusterName2
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+  EksAccessEntry3:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks3
+    Properties:
+      ClusterName: !Ref EksClusterName3
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+  EksAccessEntry4:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks4
+    Properties:
+      ClusterName: !Ref EksClusterName4
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+  EksAccessEntry5:
+    Type: AWS::EKS::AccessEntry
+    Condition: HasEks5
+    Properties:
+      ClusterName: !Ref EksClusterName5
+      PrincipalArn: !Ref RoleArn
+      Type: STANDARD
+      AccessPolicies:
+        - PolicyArn: arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy
+          AccessScope:
+            Type: cluster
+
+Outputs:
+  Region:
+    Description: Region this stack was deployed in.
+    Value: !Ref AWS::Region
+
+  ConfiguredEksClusters:
+    Description: EKS clusters configured with an ARB access entry in this region.
+    Value: !Join
+      - ','
+      - - !If [HasEks1, !Ref EksClusterName1, !Ref 'AWS::NoValue']
+        - !If [HasEks2, !Ref EksClusterName2, !Ref 'AWS::NoValue']
+        - !If [HasEks3, !Ref EksClusterName3, !Ref 'AWS::NoValue']
+        - !If [HasEks4, !Ref EksClusterName4, !Ref 'AWS::NoValue']
+        - !If [HasEks5, !Ref EksClusterName5, !Ref 'AWS::NoValue']

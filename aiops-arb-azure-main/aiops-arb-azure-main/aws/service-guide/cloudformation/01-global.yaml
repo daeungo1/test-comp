@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  ARB Review - Global stack. Creates the read-only IAM Role assumed by the ARB team.
+  Deploy this stack ONCE in us-east-1.
+  After deployment, share the RoleArn output with the ARB team.
+
+# -----------------------------------------------------------------------------
+# ARB account information is hardcoded here intentionally.
+# Target teams do not need to (and cannot) change these values.
+# -----------------------------------------------------------------------------
+# ARB Account ID : 260544022684
+# ARB Principal  : arn:aws:iam::260544022684:role/RBAC_SCOP_Q_DEVELOPER
+# -----------------------------------------------------------------------------
+
+Resources:
+  ArbReadOnlyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ARB-ReadOnly-Role
+      Description: Read-only role assumed by the ARB team to perform architecture review.
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::260544022684:role/RBAC_SCOP_Q_DEVELOPER
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      MaxSessionDuration: 3600
+      Tags:
+        - Key: Purpose
+          Value: ARB-Review
+        - Key: ManagedBy
+          Value: CloudFormation
+
+Outputs:
+  RoleArn:
+    Description: Share this Role ARN with the ARB team. Also used as a parameter for the regional stack.
+    Value: !GetAtt ArbReadOnlyRole.Arn
+    Export:
+      Name: ARB-ReadOnly-Role-Arn
+
+  RoleName:
+    Description: Name of the created IAM role.
+    Value: !Ref ArbReadOnlyRole

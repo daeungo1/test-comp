@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARB 자동화 시스템 — 2026-06-10 작업 요약</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 32px; font-weight: 800; color: #7c6af7; margin-bottom: 6px; }
+  .subtitle { color: #64748b; font-size: 14px; margin-bottom: 40px; }
+  h2 { font-size: 20px; font-weight: 700; color: #a78bfa; margin: 32px 0 16px; border-left: 4px solid #7c6af7; padding-left: 12px; }
+  h3 { font-size: 15px; font-weight: 600; color: #e2e8f0; margin: 16px 0 8px; }
+  .card { background: #1a1d27; border: 1px solid #2d3148; border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #252840; color: #94a3b8; padding: 8px 12px; text-align: left; font-size: 11px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid #1e2235; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .done { background: #14532d; color: #4ade80; }
+  .new { background: #1e1a3a; color: #a78bfa; }
+  code { background: #0f1117; padding: 2px 6px; border-radius: 3px; font-size: 12px; color: #a78bfa; font-family: monospace; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; font-size: 13px; color: #94a3b8; }
+  li strong { color: #e2e8f0; }
+  .mermaid { background: #1a1d27; border-radius: 8px; padding: 16px; }
+  .highlight { color: #4ade80; font-weight: 600; }
+  .tag { background: #2d1f6e; color: #a78bfa; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🤖 ARB 자동화 시스템</h1>
+  <div class="subtitle">2026-06-10 작업 요약 | Cloud Operation Group</div>
+
+  <!-- ── 전체 아키텍처 다이어그램 ── -->
+  <h2>📐 전체 시스템 연동 구조</h2>
+  <div class="card">
+    <div class="mermaid">
+graph LR
+    subgraph Users["👥 사용자"]
+        WU[Web 브라우저]
+        SU[Slack 사용자]
+    end
+
+    subgraph Frontend["🖥️ Frontend (React)"]
+        TAB1[📊 대시보드]
+        TAB2[🔍 ARB 점검]
+        TAB3[📋 히스토리]
+        TAB4[📄 리포트]
+        TAB5[📖 운영가이드]
+        TAB6[💰 비용]
+        CHAT[💬 RAG 채팅 패널]
+    end
+
+    subgraph EC2["🖥️ EC2 (kiro-work)"]
+        ALB[ALB :80]
+        NGINX[nginx]
+        FA[FastAPI :8000]
+        SB[slack_bot.py\nSocket Mode]
+        KIRO[kiro-cli\narb-orchestrator]
+        DB[(SQLite\narb.db)]
+    end
+
+    subgraph Knowledge["📚 Knowledge Base"]
+        IDX[knowledge_index.json\n645개 문서 인덱스]
+        DOCS[OPSPROCESS_MD\ndocs/]
+    end
+
+    subgraph AWS["☁️ AWS Services"]
+        NOVA[Bedrock Nova Lite\nus-east-1]
+        TR[Amazon Translate]
+        CE[Cost Explorer]
+    end
+
+    subgraph Agents["🤖 ARB Agents"]
+        ORCH[arb-orchestrator]
+        INF[infra agents x7]
+        DBA[database agents x7]
+    end
+
+    WU -->|HTTP| ALB
+    ALB --> NGINX --> FA
+    FA -->|static| Frontend
+    Frontend -->|API 호출| FA
+
+    SU -->|DM / @mention| SB
+    SB <-->|Socket Mode WSS| SU
+
+    FA -->|점검 실행| KIRO
+    SB -->|점검 실행| KIRO
+    KIRO --> ORCH --> INF & DBA
+
+    FA -->|RAG 질의| IDX --> DOCS
+    SB -->|RAG 질의| IDX
+    FA & SB -->|답변 생성| NOVA
+    FA -->|번역| TR
+    FA -->|비용 조회| CE
+    FA & SB --> DB
+
+    style Users fill:#1e1a3a,stroke:#7c6af7
+    style Frontend fill:#0f2a1a,stroke:#4ade80
+    style EC2 fill:#1a1d27,stroke:#2d3148
+    style Knowledge fill:#1a2a1a,stroke:#4ade80
+    style AWS fill:#1a1a2e,stroke:#60a5fa
+    style Agents fill:#1f1a0f,stroke:#fb923c
+    </div>
+  </div>
+
+  <!-- ── Web UI 처리 흐름 ── -->
+  <h2>🖥️ Web UI 처리 흐름</h2>
+  <div class="card">
+    <div class="mermaid">
+sequenceDiagram
+    participant U as 사용자 (Browser)
+    participant FE as React Frontend
+    participant FA as FastAPI
+    participant K as kiro-cli
+    participant R as RAG Engine
+    participant D as SQLite DB
+
+    U->>FE: 서비스명/계정/리전 입력 후 점검 시작
+    FE->>FA: POST /api/arb/run
+    FA->>D: job 생성 (pending)
+    FA->>K: subprocess 실행
+    FE->>FA: GET /api/arb/stream/{job_id} (SSE)
+    K-->>FA: stdout 실시간 출력
+    FA-->>FE: SSE 스트리밍
+    FE-->>U: 실시간 로그 표시
+    K-->>FA: 점검 완료
+    FA->>D: status=done, log 저장
+    FA-->>FE: SSE done 이벤트
+
+    Note over FE,FA: 리포트 탭
+    U->>FE: summary.md 선택
+    FE->>FA: GET /api/arb/reports/content
+    FA-->>FE: 마크다운 내용
+    FE-->>U: 렌더링 + 카테고리별 가이드 버튼
+
+    Note over FE,FA: RAG 채팅 패널
+    U->>FE: 질문 입력
+    FE->>FA: POST /api/chat
+    FA->>R: Knowledge 인덱스 검색 top-3
+    FA->>+Bedrock: RAG 프롬프트 (문서+리포트+질문)
+    Bedrock-->>-FA: 스트리밍 답변
+    FA-->>FE: SSE 스트리밍
+    FE-->>U: 마크다운 렌더링
+    </div>
+  </div>
+
+  <!-- ── Slack Bot 처리 흐름 ── -->
+  <h2>💬 Slack Bot 처리 흐름</h2>
+  <div class="card">
+    <div class="mermaid">
+sequenceDiagram
+    participant U as 사용자 (Slack)
+    participant B as ARB Bot
+    participant R as RAG Engine
+    participant K as kiro-cli
+    participant D as SQLite DB
+
+    U->>B: 메시지 전송
+    B->>B: 점검 요청 판별<br/>(계정ID 포함 OR "xxx 점검해줘")
+
+    alt 일반 질의
+        B->>R: Knowledge 인덱스 검색
+        R-->>B: 관련 문서 top-3
+        B->>+Bedrock: RAG 프롬프트 전송
+        Bedrock-->>-B: 답변 생성
+        B-->>U: 📖 답변
+    else 점검 요청
+        B-->>U: 🔄 점검 시작 알림
+        B->>D: job 생성 (status=running)
+        B->>+K: kiro-cli arb-orchestrator 실행
+        K-->>-B: 점검 완료
+        B->>D: job 업데이트 (status=done)
+        B-->>U: ✅ 점검 완료 + 요약
+    end
+    </div>
+  </div>
+
+  <!-- ── 오늘 작업 요약 ── -->
+  <h2>✅ 2026-06-10 주요 작업</h2>
+
+  <div class="grid3">
+    <div class="card">
+      <h3>🖥️ Web UI <span class="badge done">기존 완료</span></h3>
+      <ul>
+        <li><strong>6개 탭</strong>: 대시보드/점검/히스토리/리포트/운영가이드/비용</li>
+        <li><strong>리포트 탭</strong>: Summary/Infra/DB 트리, FAIL 행 클릭→가이드</li>
+        <li><strong>운영가이드</strong>: ARB 카테고리 트리, 키워드 AND 검색</li>
+        <li><strong>RAG 채팅</strong>: 리포트+운영가이드 탭 우측 패널</li>
+        <li><strong>한/영 번역</strong>: Amazon Translate 연동</li>
+        <li><strong>비용 차트</strong>: Cost Explorer 연간 조회</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>💬 Slack Bot <span class="badge new">오늘 완료</span></h3>
+      <ul>
+        <li><strong>Socket Mode</strong> — 포트 오픈 불필요</li>
+        <li><strong>이중 동작</strong> — 일반 질의(RAG) / 점검 요청 자동 분기</li>
+        <li><strong>점검 판별</strong> — 12자리 계정ID 또는 명시적 패턴</li>
+        <li><strong>DB 연동</strong> — Slack 점검도 SQLite 기록 → 대시보드 집계</li>
+        <li><strong>mrkdwn 변환</strong> — 마크다운 → Slack 포맷</li>
+        <li><strong>systemd 서비스</strong> — <code>arb-slack-bot.service</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🧠 RAG 채팅 (공통)</h3>
+      <ul>
+        <li><strong>모델</strong>: Amazon Bedrock Nova Lite (us-east-1)</li>
+        <li><strong>컨텍스트</strong>: Knowledge top-3 + 리포트 발췌 3000자</li>
+        <li><strong>제약</strong>: 내부 문서 외 답변 금지</li>
+        <li><strong>다국어</strong>: 한/영 답변 자동 전환</li>
+        <li><strong>공유</strong>: Web UI ↔ Slack 동일 엔진 사용</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Slack 사용 방법 ── -->
+  <h2>📱 Slack 사용 방법</h2>
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <h3>💬 일반 질의 (즉시 답변)</h3>
+        <ul>
+          <li><code>ARB가 뭐야?</code></li>
+          <li><code>Multi-AZ 구성 방법 알려줘</code></li>
+          <li><code>ARCH-011 FAIL 원인은?</code></li>
+          <li><code>백업 정책 가이드 보여줘</code></li>
+        </ul>
+      </div>
+      <div>
+        <h3>🔍 ARB 점검 요청 (30~60분)</h3>
+        <ul>
+          <li><code>myservice 123456789012 ap-northeast-2 점검해줘</code></li>
+          <li><code>ARB 점검 myservice 123456789012</code></li>
+          <li>계정 ID(12자리) 포함 시 자동 감지</li>
+          <li>완료 시 Slack으로 결과 전송 + Web UI 히스토리 기록</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 누적 구현 현황 ── -->
+  <h2>📊 전체 구현 현황</h2>
+  <div class="card">
+    <table>
+      <tr><th>Phase</th><th>항목</th><th>상태</th></tr>
+      <tr><td>Phase 1</td><td>KIRO CLI 기반 ARB 자동화 (14 Agent, 75+214 체크리스트)</td><td><span class="badge done">완료</span></td></tr>
+      <tr><td>Phase 2</td><td>Web UI 6탭 (대시보드/점검/히스토리/리포트/운영가이드/비용)</td><td><span class="badge done">완료</span></td></tr>
+      <tr><td>Phase 3</td><td>645개 Knowledge 기반 운영가이드 + RAG 채팅 (Bedrock Nova Lite)</td><td><span class="badge done">완료</span></td></tr>
+      <tr><td>Phase 4</td><td>한/영 번역 (Amazon Translate) + Cost Explorer 비용 현황</td><td><span class="badge done">완료</span></td></tr>
+      <tr><td>Phase 5</td><td><strong>Slack Bot (Socket Mode) + DB 연동</strong></td><td><span class="badge new">오늘 완료</span></td></tr>
+      <tr><td>Backlog</td><td>사용자 역할 기반 접근 제어 / AgentCore 연동 / 점검 스케줄링</td><td>예정</td></tr>
+    </table>
+  </div>
+
+  <div style="margin-top: 40px; text-align: center; color: #475569; font-size: 12px;">
+    Cloud Operation Group · 2026-06-10 · ARB 자동화 시스템
+  </div>
+</div>
+<script>mermaid.initialize({ startOnLoad: true, theme: 'dark' });</script>
+</body>
+</html>

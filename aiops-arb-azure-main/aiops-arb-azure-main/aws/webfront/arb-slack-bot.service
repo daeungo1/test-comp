@@ -1,0 +1,15 @@
+[Unit]
+Description=ARB Slack Bot
+After=network.target arb-backend.service
+
+[Service]
+Type=simple
+User=noboru78.lee
+WorkingDirectory=/home/noboru78.lee/repo/aiops-arb-kiro
+ExecStart=/usr/bin/python3 web/backend/slack_bot.py
+Restart=on-failure
+RestartSec=10
+Environment=HOME=/home/noboru78.lee
+
+[Install]
+WantedBy=multi-user.target

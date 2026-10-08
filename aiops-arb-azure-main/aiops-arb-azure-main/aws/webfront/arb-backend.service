@@ -1,0 +1,15 @@
+[Unit]
+Description=ARB Review FastAPI Backend
+After=network.target
+
+[Service]
+Type=simple
+User=noboru78.lee
+WorkingDirectory=/home/noboru78.lee/repo/aiops-arb-kiro
+ExecStart=/usr/local/bin/uvicorn web.backend.main:app --host 127.0.0.1 --port 8000 --workers 4
+Restart=on-failure
+RestartSec=5
+Environment=HOME=/home/noboru78.lee
+
+[Install]
+WantedBy=multi-user.target

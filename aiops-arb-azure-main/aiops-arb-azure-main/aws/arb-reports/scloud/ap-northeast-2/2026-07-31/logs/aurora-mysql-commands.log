@@ -1,0 +1,60 @@
+[2026-07-30T17:39:10+09:00] ACTION: AWS CLI - aws rds describe-db-clusters --filters Name=engine,Values=aurora-mysql --region ap-northeast-2
+[2026-07-30T17:39:10+09:00] PURPOSE: 1단계 벌크 조회 - 전체 Aurora MySQL 클러스터 목록
+[2026-07-30T17:39:10+09:00] RESPONSE_SUMMARY: 1개 클러스터 발견 (s2an2planauroramy01)
+---
+[2026-07-30T17:39:12+09:00] ACTION: AWS CLI - aws rds describe-global-clusters --region ap-northeast-2
+[2026-07-30T17:39:12+09:00] PURPOSE: 1단계 벌크 조회 - Global Cluster 확인 (AURMY-HA-003)
+[2026-07-30T17:39:12+09:00] RESPONSE_SUMMARY: Global Clusters 없음
+---
+[2026-07-30T17:39:12+09:00] ACTION: AWS CLI - aws ec2 describe-vpcs --region ap-northeast-2
+[2026-07-30T17:39:12+09:00] PURPOSE: 1단계 벌크 조회 - VPC 정보 확인 (AURMY-NET-001)
+[2026-07-30T17:39:12+09:00] RESPONSE_SUMMARY: 2개 VPC, 모두 IsDefault=false
+---
+[2026-07-30T17:39:14+09:00] ACTION: AWS CLI - aws rds describe-db-instances --filters Name=db-cluster-id,Values=s2an2planauroramy01 --region ap-northeast-2
+[2026-07-30T17:39:14+09:00] PURPOSE: 2단계 클러스터별 조회 - 인스턴스 상세정보
+[2026-07-30T17:39:14+09:00] RESPONSE_SUMMARY: 1개 인스턴스 (s2an2planauroramy01-instance-1, db.r6g.large, AZ=ap-northeast-2b)
+---
+[2026-07-30T17:39:14+09:00] ACTION: AWS CLI - aws rds describe-db-cluster-parameters --db-cluster-parameter-group-name aurora-large-31-aorc-cluster --region ap-northeast-2
+[2026-07-30T17:39:14+09:00] PURPOSE: 2단계 클러스터별 조회 - 클러스터 파라미터 그룹 상세
+[2026-07-30T17:39:14+09:00] RESPONSE_SUMMARY: 424개 파라미터, user 소스 9개
+---
+[2026-07-30T17:39:16+09:00] ACTION: AWS CLI - aws rds describe-pending-maintenance-actions --resource-identifier arn:aws:rds:ap-northeast-2:325339151285:cluster:s2an2planauroramy01
+[2026-07-30T17:39:16+09:00] PURPOSE: 2단계 클러스터별 조회 - Pending Maintenance (AURMY-MNT-003)
+[2026-07-30T17:39:16+09:00] RESPONSE_SUMMARY: 1건 (os-upgrade)
+---
+[2026-07-30T17:39:16+09:00] ACTION: AWS CLI - aws rds describe-db-cluster-snapshots --db-cluster-identifier s2an2planauroramy01 --region ap-northeast-2
+[2026-07-30T17:39:16+09:00] PURPOSE: 2단계 클러스터별 조회 - 스냅샷 확인 (AURMY-BR-003)
+[2026-07-30T17:39:16+09:00] RESPONSE_SUMMARY: 7개 자동 스냅샷, Cross-Region 복사본 없음
+---
+[2026-07-30T17:39:18+09:00] ACTION: AWS CLI - aws ec2 describe-security-groups --group-ids sg-0992a77fc4dabe205 sg-031cd4fcd419f15f1
+[2026-07-30T17:39:18+09:00] PURPOSE: Security Group 인바운드 규칙 확인 (COM-SEC-003, COM-AC-001, COM-AC-002)
+[2026-07-30T17:39:18+09:00] RESPONSE_SUMMARY: 2개 SG - 모두 SG 기반 접근만 허용, 0.0.0.0/0 없음
+---
+[2026-07-30T17:39:19+09:00] ACTION: AWS CLI - aws ec2 describe-route-tables --filters Name=association.subnet-id,Values=subnet-017732a7996248e3e,subnet-09ce9e0f7513e70f5,subnet-097204d408aec9c88
+[2026-07-30T17:39:19+09:00] PURPOSE: DB 서브넷 라우트 테이블 확인 (COM-NI-001)
+[2026-07-30T17:39:19+09:00] RESPONSE_SUMMARY: 3개 라우트 테이블, 0.0.0.0/0 → IGW 경로 없음
+---
+[2026-07-30T17:39:20+09:00] ACTION: AWS CLI - aws cloudwatch describe-alarms (Namespace=AWS/RDS, 클러스터 필터)
+[2026-07-30T17:39:20+09:00] PURPOSE: CloudWatch 알람 설정 확인 (COM-MON-001, COM-MON-004)
+[2026-07-30T17:39:20+09:00] RESPONSE_SUMMARY: RDS 관련 CloudWatch 알람 0건
+---
+[2026-07-30T17:39:21+09:00] ACTION: AWS CLI - aws ec2 describe-instances --instance-ids i-080fdcc132cb1d68b
+[2026-07-30T17:39:21+09:00] PURPOSE: Bastion 인스턴스 존재 및 SG 확인 (COM-AC-003)
+[2026-07-30T17:39:21+09:00] RESPONSE_SUMMARY: Bastion(s2an2bastion001_new) running, DB SG에서 db-jmp-SG 참조 확인
+---
+[2026-07-30T17:39:22+09:00] ACTION: AWS CLI - aws ec2 describe-security-groups --group-ids sg-455df82c (jmp-SG)
+[2026-07-30T17:39:22+09:00] PURPOSE: SBC NAT IP 허용 여부 확인 (COM-AC-001)
+[2026-07-30T17:39:22+09:00] RESPONSE_SUMMARY: SBC NAT IP(211.189.57.60/32) 미발견
+---
+[2026-07-30T17:39:23+09:00] ACTION: AWS CLI - aws rds list-tags-for-resource (cluster ARN)
+[2026-07-30T17:39:23+09:00] PURPOSE: 필수 태그 확인 (COM-TAG-001)
+[2026-07-30T17:39:23+09:00] RESPONSE_SUMMARY: Environment, Owner, Team 태그 없음
+---
+[2026-07-30T17:39:24+09:00] ACTION: AWS CLI - aws rds describe-db-engine-versions --engine aurora-mysql (3.10.x 관련)
+[2026-07-30T17:39:24+09:00] PURPOSE: 엔진 버전 EOL 확인 (AURMY-HA-005)
+[2026-07-30T17:39:24+09:00] RESPONSE_SUMMARY: 3.10.0 available, LTS 버전은 3.04.x
+---
+[2026-07-30T17:39:25+09:00] ACTION: 파일 읽기 - pre-survey/aurora-mysql-survey-mock.md
+[2026-07-30T17:39:25+09:00] PURPOSE: auto:false 항목 판정을 위한 사전 조사 파일 로드
+[2026-07-30T17:39:25+09:00] RESPONSE_SUMMARY: 파일 로드 완료, ACC/SCH 섹션 파싱
+---
